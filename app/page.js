@@ -1,40 +1,35 @@
 import { supabase } from '../lib/supabaseClient'
+import VictorsList from '../components/VictorsList'
 
 export const revalidate = 0
 
 export default async function HomePage() {
-  console.log('Fetching messages...')
-
-  // Add a manual timeout to avoid indefinite hangs
   const timeout = new Promise((_, reject) =>
     setTimeout(() => reject(new Error('Supabase request timed out')), 5000)
   )
 
   try {
-    const { data: messages, error } = await Promise.race([
-      supabase.from('messages').select('*').order('created_at', { ascending: false }),
+    const [{ data: victors }, { data: colors }] = await Promise.race([
+      Promise.all([
+        supabase.from('victors').select('*').order('id', { ascending: true }),
+        supabase.from('colors').select('*'),
+      ]),
       timeout,
     ])
 
-    if (error) {
-      return <div>Error fetching messages: {error.message}</div>
-    }
+    // Create a lookup for colors by Pattern and Key
+    const colorMap = {}
+    colors.forEach((colorRow) => {
+      colorMap[`${colorRow.Pattern}_${colorRow.Key}`] = colorRow.Color
+    })
 
-    console.log('Messages fetched:', messages)
+    // Add Color to each victor
+    const victorsWithColor = victors.map((victor) => ({
+      ...victor,
+      Color: colorMap[`${victor.Pattern}_${victor.Key}`] || '',
+    }))
 
-    return (
-      <main style={{ padding: '2rem' }}>
-        <h1>Messages</h1>
-        <ul>
-          {messages.length === 0 && <li>No messages found</li>}
-          {messages.map((msg) => (
-            <li key={msg.id}>
-              {msg.text} — {new Date(msg.created_at).toLocaleString()}
-            </li>
-          ))}
-        </ul>
-      </main>
-    )
+    return <VictorsList messages={victorsWithColor} />
   } catch (err) {
     return <div>{err.message}</div>
   }

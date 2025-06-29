@@ -1,0 +1,19 @@
+.tableCenter {
+    margin: 20px auto;
+    width: auto;  
+}
+.tableCenter td {
+    min-width: 100px;
+    background-color: white;
+    color: black;
+}
+.tableCenter th {
+    background-color: black;
+}
+.main {
+    text-align: center;
+    background-image: url(../app/LIMBO.png);
+    background-repeat:no-repeat;
+    background-size: 100%;
+    background-attachment: fixed;
+}
