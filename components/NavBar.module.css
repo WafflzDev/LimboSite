@@ -1,0 +1,29 @@
+.navbar {
+  display: flex;
+  gap: 16px;
+  background: #222;
+  padding: 12px 24px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.navbar button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.navbar button:hover,
+.navbar .active {
+  background: #444;
+}
+.active {
+  font-weight: bold;
+  background: #444;
+}

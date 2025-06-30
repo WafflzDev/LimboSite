@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import styles from './VictorsList.module.css'
+import NavBar from './NavBar';
 
 const colorMap = {
   Yellow: "#ffd369",
@@ -25,6 +27,7 @@ const columns = [
 ];
 
 export default function VictorsList({ messages }) {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [sortColumn, setSortColumn] = useState(null);
   const [sortDirection, setSortDirection] = useState('asc');
@@ -107,7 +110,8 @@ export default function VictorsList({ messages }) {
   }
 
   return (
-    <main className={styles.main} style={{ padding: '20px' }}>
+    <main className={styles.main}>
+      <NavBar />
       <h1 className={styles.h1}>The LIMBO Victors List</h1>
       <div className={styles.tableWrapper}>
         <table
@@ -193,5 +197,5 @@ export default function VictorsList({ messages }) {
         />
       </div>
     </main>
-  )
+  );
 }
