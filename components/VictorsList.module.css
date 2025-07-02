@@ -47,6 +47,14 @@
     }
 }
 
+.clickableCell {
+  transition: background 0.2s, transform 0.15s;
+}
+.clickableCell:hover {
+  transform: scale(1.1);
+  z-index: 2;
+}
+
 .main {
     min-height: 100vh;
     text-align: center;
