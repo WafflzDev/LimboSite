@@ -89,6 +89,16 @@ export default function Progress({ victors = [], colors = [] }) {
   const maxKey = Math.max(...coloredPerKey);
   const maxPattern = Math.max(...coloredPerPattern);
 
+  const victorsPerKey = keys.map(key =>
+    patterns.reduce((acc, pattern) => acc + getCellVictors(victors, pattern, key).length, 0)
+  );
+  const maxVictorsPerKey = Math.max(...victorsPerKey);
+
+  const victorsPerPattern = patterns.map(pattern =>
+    keys.reduce((acc, key) => acc + getCellVictors(victors, pattern, key).length, 0)
+  );
+  const maxVictorsPerPattern = Math.max(...victorsPerPattern);
+
   return (
     <main className={styles.main}>
       <NavBar />
@@ -156,7 +166,7 @@ export default function Progress({ victors = [], colors = [] }) {
                   color: '#fff',
                   fontWeight: 'bold',
                   minWidth: 120,
-                  border: '2px solid #000',
+                  border: '1px solid #000',
                   position: 'sticky',
                   left: 0,
                   zIndex: 2,
@@ -172,7 +182,7 @@ export default function Progress({ victors = [], colors = [] }) {
                     color: '#fff',
                     fontWeight: 'bold',
                     minWidth: 90,
-                    border: '2px solid #000',
+                    border: '1px solid #000',
                   }}
                 >
                   Key {key}
@@ -184,94 +194,126 @@ export default function Progress({ victors = [], colors = [] }) {
                   color: '#fff',
                   fontWeight: 'bold',
                   minWidth: 90,
-                  border: '2px solid #000',
+                  border: '1px solid #000',
                 }}
               >
                 Progress
               </th>
+              <th
+                style={{
+                  background: '#000',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  minWidth: 90,
+                  border: '1px solid #000',
+                }}
+              >
+                Victors
+              </th>
             </tr>
           </thead>
           <tbody>
-            {patterns.map((pattern, rowIdx) => (
-              <tr key={pattern}>
-                <th
-                  style={{
-                    background: '#000',
-                    color: '#fff',
-                    fontWeight: 'bold',
-                    minWidth: 120,
-                    border: '2px solid #000',
-                    position: 'sticky',
-                    left: 0,
-                    zIndex: 1,
-                  }}
-                >
-                  Pattern {pattern}
-                </th>
-                {keys.map((key, colIdx) => {
-                  const cellVictors = getCellVictors(victors, pattern, key);
-                  const cellColorName = getCellColor(colors, pattern, key);
-                  const cellColor = cellVictors.length ? getColorHex(cellColorName) : "#fff";
-                  const isMulti = cellVictors.length > 1;
-                  const isClickable = cellVictors.length > 0;
-                  return (
-                    <td
-                      key={key}
-                      className={isClickable ? styles.clickableCell : ''}
-                      style={{
-                        background: cellColor,
-                        color: cellVictors.length ? "#000" : "#fff",
-                        border: isMulti ? '3px solid #222' : '1px solid #888',
-                        fontWeight: isMulti ? 'bold' : 'normal',
-                        minWidth: 90,
-                        textAlign: 'center',
-                        cursor: isClickable ? 'pointer' : 'default',
-                        position: 'relative',
-                      }}
-                      title={cellVictors.length
-                        ? cellVictors.map(v => v.Player).join('\n')
-                        : undefined}
-                      onClick={() => {
-                        if (cellVictors.length) {
-                          setPopup({
-                            open: true,
-                            victors: cellVictors,
-                            selected: 0,
-                            pattern,
-                            key,
-                            color: cellColor,
-                            colorName: cellColorName,
-                          });
-                        }
-                      }}
-                      onMouseOver={e => {
-                        if (cellVictors.length) {
-                          e.currentTarget.setAttribute('data-tooltip', cellVictors.map(v => v.Player).join('\n'));
-                        }
-                      }}
-                    >
-                      {cellVictors.length ? (
-                        <span>
-                          {cellColorName}
-                        </span>
-                      ) : ''}
-                    </td>
-                  );
-                })}
-                {/* Patterns column */}
-                <td
-                  style={{
-                    background: '#ddd',
-                    color: '#000',
-                    fontWeight: coloredPerPattern[rowIdx] === maxPattern ? 'bold' : 'normal',
-                    border: '1px solid #000',
-                    textAlign: 'center',
-                  }}
-                >
-                  {coloredPerPattern[rowIdx]}/{keys.length}
-                </td>
-              </tr>
-            ))}
+            {patterns.map((pattern, rowIdx) => {
+              // Count total victors for this row (all keys)
+              const victorsInRow = keys.reduce(
+                (acc, key) => acc + getCellVictors(victors, pattern, key).length,
+                0
+              );
+              return (
+                <tr key={pattern}>
+                  <th
+                    style={{
+                      background: '#000',
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      minWidth: 120,
+                      border: '1px solid #000',
+                      position: 'sticky',
+                      left: 0,
+                      zIndex: 1,
+                    }}
+                  >
+                    Pattern {pattern}
+                  </th>
+                  {keys.map((key, colIdx) => {
+                    const cellVictors = getCellVictors(victors, pattern, key);
+                    const cellColorName = getCellColor(colors, pattern, key);
+                    const cellColor = cellVictors.length ? getColorHex(cellColorName) : "#fff";
+                    const isMulti = cellVictors.length > 1;
+                    const isClickable = cellVictors.length > 0;
+                    return (
+                      <td
+                        key={key}
+                        className={isClickable ? styles.clickableCell : ''}
+                        style={{
+                          background: cellColor,
+                          color: cellVictors.length ? "#000" : "#fff",
+                          border: isMulti ? '2px solid #222' : '1px solid #888',
+                          fontWeight: isMulti ? 'bold' : 'normal',
+                          fontStyle: isMulti ? 'italic' : 'normal',
+                          minWidth: 90,
+                          textAlign: 'center',
+                          cursor: isClickable ? 'pointer' : 'default',
+                          position: 'relative',
+                        }}
+                        title={cellVictors.length
+                          ? cellVictors.map(v => v.Player).join('\n')
+                          : undefined}
+                        onClick={() => {
+                          if (cellVictors.length) {
+                            setPopup({
+                              open: true,
+                              victors: cellVictors,
+                              selected: 0,
+                              pattern,
+                              key,
+                              color: cellColor,
+                              colorName: cellColorName,
+                            });
+                          }
+                        }}
+                        onMouseOver={e => {
+                          if (cellVictors.length) {
+                            e.currentTarget.setAttribute('data-tooltip', cellVictors.map(v => v.Player).join('\n'));
+                          }
+                        }}
+                      >
+                        {cellVictors.length ? (
+                          <span>
+                            {cellColorName}
+                          </span>
+                        ) : ''}
+                      </td>
+                    );
+                  })}
+                  {/* Patterns column: unique colors in this row */}
+                  <td
+                    style={{
+                      background: '#ddd',
+                      color: '#000',
+                      fontWeight: coloredPerPattern[rowIdx] === maxPattern ? 'bold' : 'normal',
+                      border: '1px solid #000',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {coloredPerPattern[rowIdx]}/{keys.length}
+                  </td>
+                  {/* Victors column: total victors in this row */}
+                  <td
+                    style={{
+                      background: '#fff',
+                      color: '#000',
+                      fontWeight: victorsInRow === maxVictorsPerPattern ? 'bold' : 'normal',
+                      border: '1px solid #000',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {victorsInRow}
+                  </td>
+                </tr>
+              );
+            })}
+
             {/* Keys row at the bottom */}
             <tr>
               <th
@@ -280,7 +322,7 @@ export default function Progress({ victors = [], colors = [] }) {
                   color: '#fff',
                   fontWeight: 'bold',
                   minWidth: 120,
-                  border: '2px solid #000',
+                  border: '1px solid #000',
                   position: 'sticky',
                   left: 0,
                   zIndex: 1,
@@ -302,18 +344,74 @@ export default function Progress({ victors = [], colors = [] }) {
                   {val}/{patterns.length}
                 </td>
               ))}
-              {/* Bottom-right cell: total */}
+              {/* Patterns column: total unique colors */}
               <td
                 style={{
                   background: '#000',
                   color: '#fff',
                   fontWeight: 'bold',
-                  border: '2px solid #000',
+                  border: '1px solid #000',
                   textAlign: 'center',
                 }}
               >
                 {totalColored}/{patterns.length * keys.length}
               </td>
+              {/* Victors column: empty */}
+              <td
+                style={{
+                  background: '#000',
+                  border: '1px solid #000',
+                }}
+              ></td>
+            </tr>
+
+            {/* Victors row at the very bottom */}
+            <tr>
+              <th
+                style={{
+                  background: '#000',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  minWidth: 120,
+                  border: '1px solid #000',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 1,
+                }}
+              >
+                Victors
+              </th>
+              {victorsPerKey.map((victorsInCol, idx) => (
+                <td
+                  key={idx}
+                  style={{
+                    background: '#fff',
+                    color: '#000',
+                    fontWeight: victorsInCol === maxVictorsPerKey ? 'bold' : 'normal',
+                    border: '1px solid #000',
+                    textAlign: 'center',
+                  }}
+                >
+                  {victorsInCol}
+                </td>
+              ))}
+              {/* Patterns column: empty */}
+              <td
+                style={{
+                  background: '#000',
+                  fontWeight: 'bold',
+                  border: '1px solid #000',
+                }}
+              >
+                {((totalColored / 120) * 100).toFixed(2)}%
+              </td>
+              {/* Victors column: empty */}
+              <td
+                style={{
+                  background: '#000',
+                  border: '1px solid #000',
+                }}
+              ></td>
             </tr>
           </tbody>
         </table>
@@ -375,7 +473,7 @@ export default function Progress({ victors = [], colors = [] }) {
                     style={{
                       padding: '4px 10px',
                       borderRadius: 6,
-                      border: i === popup.selected ? '2px solid #222' : '1px solid #aaa',
+                      border: i === popup.selected ? '1px solid #222' : '1px solid #aaa',
                       background: i === popup.selected ? '#000' : '#fff',
                       color: i === popup.selected ? '#fff' : '#000',
                       fontWeight: i === popup.selected ? 'bold' : 'normal',
